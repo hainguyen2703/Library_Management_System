@@ -29,9 +29,30 @@ struct Data {
 	User_Information lst[Max];//mang chua danh sach user
 };
 
+
+struct book {
+	int ISBN;
+	char name[Max];
+	char author[Max];
+	char nxb[Max];
+	int year;
+	char type[Max];
+	float cost;
+	int quantity;
+};
+
+struct Book_data {
+	int n=0;//so luong sach
+	book book_lst[Max];//mang cau truc, moi cau truc la 1 cuon sach
+};
+
 int GetData(char* file_name, Data* user);
 
+int GetBookData(char * file_name, Book_data * book_list);
+
 int SaveData(char* file_name, Data user);
+
+int SaveBookData(char * file_name, Book_data book_list);
 
 int CheckDataNull(Data lst);
 
@@ -76,3 +97,7 @@ int RemoveUser(Data* user, info acc);
 void SearchCMND(Data user);
 
 void SearchName(Data user);
+
+int ChonQuanLy();
+
+void InSach(Book_data bd);
