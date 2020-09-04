@@ -13,11 +13,14 @@ int main()
 	//Variable's declaration
 	//******************************************************************************
 	char file[] = "Data.dat";
+	char book_file[] = "Book.dat";
 	int option;
 	Data user;
 	info acc;
+	Book_data book_list;
+	book bk;
 	//******************************************************************************
-	if (GetData(file, &user) == 0)
+	if (GetData(file, &user) == 0 || GetBookData(book_file,&book_list)==0)
 	{
 		printf("Khong lay duoc data\n");
 	}
@@ -131,121 +134,145 @@ int main()
 				}
 				else
 				{
-					int action = 0;
-					do
+					int type = 0;
+					type = ChonQuanLy();
+					if (type == 0)
 					{
-						printf("\n----------------------Login Menu------------------------\n");
-						printf("1. Update my information\n");
-						printf("2. Change password\n");
-						printf("3. Print user list\n");
-						printf("4. Block/Unblock user in list\n");
-						printf("5. Change user role\n");
-						printf("6. Add user\n");
-						printf("7. Change user information\n");
-						printf("8. Remove a user\n");
-						printf("9 Search user by cmnd\n");
-						printf("10. Search user by name\n");
-						printf("0. Exit\n");
-						printf("Enter your action: ");
-						scanf("%d", &action);
-						rewind(stdin);
-						int check = 0;
-						switch (action)
+						int action = 0;
+						do
 						{
-						case 1:
-							//**************************Update My Information***************************
-							for (int i = 0; i < user.n; i++)
+							printf("\n----------------------Login Menu------------------------\n");
+							printf("1. Update my information\n");
+							printf("2. Change password\n");
+							printf("3. Print user list\n");
+							printf("4. Block/Unblock user in list\n");
+							printf("5. Change user role\n");
+							printf("6. Add user\n");
+							printf("7. Change user information\n");
+							printf("8. Remove a user\n");
+							printf("9 Search user by cmnd\n");
+							printf("10. Search user by name\n");
+							printf("0. Exit\n");
+							printf("Enter your action: ");
+							scanf("%d", &action);
+							rewind(stdin);
+							int check = 0;
+							switch (action)
 							{
-								if (strcmp(user.lst[i].id, acc.id) == 0)
+							case 1:
+								//**************************Update My Information***************************
+								for (int i = 0; i < user.n; i++)
 								{
-									UpdateInfo(&user.lst[i]);
+									if (strcmp(user.lst[i].id, acc.id) == 0)
+									{
+										UpdateInfo(&user.lst[i]);
+										break;
+									}
+								}
+								break;
+								//***********************************************************************
+							case 2:
+								//**************************Change password******************************
+								printf("\n------------------------Change password----------------------\n");
+								ChangePassword(&acc, &user);
+								break;
+								//***********************************************************************
+							case 3:
+								//**************************Print user list******************************
+								printf("\n------------------------User list----------------------\n");
+								XuatMang(user);
+								break;
+								//***********************************************************************
+							case 4:
+								//**************************Block user in list***************************
+								printf("\n------------------------User list----------------------\n");
+								XuatMang(user);
+								printf("\n------------------------Block/Unblock user----------------------\n");
+								Block_user(&user, acc);
+								break;
+								//***********************************************************************
+							case 5:
+								//**************************Change user role*****************************
+								printf("\n------------------------User list----------------------\n");
+								XuatMang(user);
+								printf("\n------------------------Change user role-------------------\n");
+								ChangeRole(&user, acc);
+								break;
+								//***********************************************************************
+							case 6:
+								//**************************Add a user to list***************************
+								printf("\n------------------------Add user----------------------\n");
+								CreateAcc(&user);
+								break;
+								//***********************************************************************
+							case 7:
+								//**************************Change user information**********************
+								printf("\n------------------------User list----------------------\n");
+								XuatMang(user);
+								printf("\n------------------------Change user information-------------------\n");
+								AdminUpdateInfo(&user);
+								break;
+								//***********************************************************************
+							case 8:
+								//**************************Remove a user account**********************
+								printf("\n------------------------User list----------------------\n");
+								XuatMang(user);
+								printf("\n------------------------Remove a user-------------------\n");
+								check = RemoveUser(&user, acc);
+								switch (check)
+								{
+								case 0:
+									printf("Chua xoa user\n");
+									break;
+								case 1:
+									break;
+								case 2:
+									printf("Day la account cua ban\n");
 									break;
 								}
+								break;
+								//***********************************************************************
+							case 9:
+								//**************************Search user by cmnd**************************
+								printf("*********Tim kim user bang tai so chung minh nhan dan*********\n");
+								SearchCMND(user);
+								break;
+								//***********************************************************************
+							case 10:
+								//**************************Search user by name**************************
+								printf("*********Tim kim user theo ten*********\n");
+								SearchName(user);
+								break;
+							default:
+								break;
 							}
-							break;
-							//***********************************************************************
-						case 2:
-							//**************************Change password******************************
-							printf("\n------------------------Change password----------------------\n");
-							ChangePassword(&acc, &user);
-							break;
-							//***********************************************************************
-						case 3:
-							//**************************Print user list******************************
-							printf("\n------------------------User list----------------------\n");
-							XuatMang(user);
-							break;
-							//***********************************************************************
-						case 4:
-							//**************************Block user in list***************************
-							printf("\n------------------------User list----------------------\n");
-							XuatMang(user);
-							printf("\n------------------------Block/Unblock user----------------------\n");
-							Block_user(&user, acc);
-							break;
-							//***********************************************************************
-						case 5:
-							//**************************Change user role*****************************
-							printf("\n------------------------User list----------------------\n");
-							XuatMang(user);
-							printf("\n------------------------Change user role-------------------\n");
-							ChangeRole(&user, acc);
-							break;
-							//***********************************************************************
-						case 6:
-							//**************************Add a user to list***************************
-							printf("\n------------------------Add user----------------------\n");
-							CreateAcc(&user);
-							break;
-							//***********************************************************************
-						case 7:
-							//**************************Change user information**********************
-							printf("\n------------------------User list----------------------\n");
-							XuatMang(user);
-							printf("\n------------------------Change user information-------------------\n");
-							AdminUpdateInfo(&user);
-							break;
-							//***********************************************************************
-						case 8:
-							//**************************Remove a user account**********************
-							printf("\n------------------------User list----------------------\n");
-							XuatMang(user);
-							printf("\n------------------------Remove a user-------------------\n");
-							check = RemoveUser(&user, acc);
-							switch (check)
+						} while (action != 0);
+					}
+					else 
+					{
+						int action = 0;
+						do
+						{
+							printf("**************Book Management*************\n");
+							printf("1. In danh sach cac cuon sach\n");
+							printf("Nhap vao chuc nang ban muon su dung: ");
+							scanf("%d", &action);
+							switch (action)
 							{
-							case 0:
-								printf("Chua xoa user\n");
-								break;
 							case 1:
+								InSach(book_list);
 								break;
-							case 2:
-								printf("Day la account cua ban\n");
+							default:
 								break;
 							}
-							break;
-							//***********************************************************************
-						case 9: 
-							//**************************Search user by cmnd**************************
-							printf("*********Tim kim user bang tai so chung minh nhan dan*********\n");
-							SearchCMND(user);
-							break;
-							//***********************************************************************
-						case 10:
-							//**************************Search user by name**************************
-							printf("*********Tim kim user theo ten*********\n");
-							SearchName(user);
-							break;
-						default:
-							break;
-						}
-					} while (action != 0);
+						} while (action!=0);
+					}
 				}
 			}
 		} while (option != 0);//neu option = 0 thi exit chuong trinh
 	}	
 	//luu data vao file truoc khi exit
-	if (SaveData(file, user) == 0)
+	if (SaveData(file, user) == 0 || SaveBookData(book_file,book_list)==0)
 	{
 		printf("Khong luu duoc du lieu vao file\n");
 	}
@@ -274,6 +301,29 @@ int GetData(char* file_name, Data* user)
 	}
 }
 
+int GetBookData(char *file_name, Book_data *book_list)
+{
+	FILE *fp;
+	int k = 0;
+	fp = fopen(file_name, "rb");
+	if (fp == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		while (feof(fp) == 0)
+		{
+			if (fread(&book_list->book_lst[k], sizeof(book), 1, fp) == 1)
+			{
+				book_list->n++;
+			}
+		}
+		fclose(fp);
+		return 1;
+	}
+}
+
 int SaveData(char* file_name, Data user)
 {
 	FILE* fp;
@@ -285,6 +335,22 @@ int SaveData(char* file_name, Data user)
 	else
 	{
 		fwrite(user.lst, sizeof(info), user.n, fp);
+		fclose(fp);
+		return 1;
+	}
+}
+
+int SaveBookData(char *file_name, Book_data book_list)
+{
+	FILE *fp;
+	fp = fopen(file_name, "wb");
+	if (fp == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		fwrite(book_list.book_lst, sizeof(book), book_list.n, fp);
 		fclose(fp);
 		return 1;
 	}
@@ -689,5 +755,39 @@ void SearchName(Data user)
 	if (flag == 0)
 	{
 		printf("Khong co user nao ten: %s\n", temp);
+	}
+}
+
+int ChonQuanLy()
+{
+	char s[10];
+	printf("Quan ly user hay book?: ");
+	rewind(stdin);
+	gets_s(s);
+	rewind(stdin);
+	Del_Space(s);
+	if (_strcmpi(s, "book") == 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void InSach(Book_data bd)
+{
+	if (bd.n == 0)
+	{
+		printf("Chua co cuon sach nao trong thu vien\n");
+	}
+	else
+	{
+		printf("ISBN       \tName       \tAuthor       \tYear\n");
+		for (int i = 0; i < bd.n; i++)
+		{
+			printf("%d       \t%s       \t%s       \t%d\n", bd.book_lst->ISBN, bd.book_lst->name, bd.book_lst->author, bd.book_lst->year);
+		}
 	}
 }
