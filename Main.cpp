@@ -255,12 +255,17 @@ int main()
 						{
 							printf("**************Book Management*************\n");
 							printf("1. In danh sach cac cuon sach\n");
+							printf("2. Them sach vao thu vien\n");
+							printf("Enter 0 to Exit\n");
 							printf("Nhap vao chuc nang ban muon su dung: ");
 							scanf("%d", &action);
 							switch (action)
 							{
 							case 1:
 								InSach(book_list);
+								break;
+							case 2:
+								AddBook(&book_list);
 								break;
 							default:
 								break;
@@ -784,10 +789,103 @@ void InSach(Book_data bd)
 	}
 	else
 	{
-		printf("ISBN       \tName       \tAuthor       \tYear\n");
+		printf("ISBN       \tName                 \t\tAuthor            \tYear\n");
 		for (int i = 0; i < bd.n; i++)
 		{
-			printf("%d       \t%s       \t%s       \t%d\n", bd.book_lst->ISBN, bd.book_lst->name, bd.book_lst->author, bd.book_lst->year);
+			printf("%d       \t%s        \t%s            \t%d\n", bd.book_lst->ISBN, bd.book_lst->name, bd.book_lst->author, bd.book_lst->year);
 		}
+	}
+}
+
+void NhapInfoSach(book* b)
+{
+	int valid = 0;
+	do
+	{
+		printf("Nhap vao ma sach: ");
+		scanf("%d", &b->ISBN);
+		printf("Nhap vao ten sach: ");
+		rewind(stdin);
+		gets_s(b->name);
+		rewind(stdin);
+		printf("Nhap vao ten tac gia: ");
+		gets_s(b->author);
+		rewind(stdin);
+		printf("Nhap vao nxb: ");
+		gets_s(b->nxb);
+		rewind(stdin);
+		printf("Nhap vao nam san xuat: ");
+		scanf("%d", &b->year);
+		printf("Nhap vao the loai sach: ");
+		rewind(stdin);
+		gets_s(b->type);
+		rewind(stdin);
+		printf("Nhap vao so quyen sach: ");
+		scanf("%d", &b->quantity);
+		printf("Nhap vao gia tien: ");
+		scanf("%lf", &b->cost);
+		rewind(stdin);
+		valid = Book_Validate(*b);
+		if (valid == 0)
+			printf("Sach nhap vao khong hop le\n");
+	} while (valid==0);
+}
+
+int checkName(char s[])
+{
+	char spe_char[] = "!@#$%^&*()-_+=\?;><.,][{}:";
+	for (int i = 0; i < strlen(spe_char); i++)
+	{
+		if (strchr(s, spe_char[i]) != NULL)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int Book_Validate(book b)
+{
+	time_t s;
+	tm *current_time;
+	s = time(NULL);
+	current_time = localtime(&s);
+	if (b.year > (current_time->tm_year + 1900) || b.quantity < 0 || b.cost < 0)
+	{
+		//check nam xuat ban, so quyen sach nhap vao, gia tien
+		printf("Nam xb khong hop le\n");
+		return 0;
+	}
+	Del_Space(b.author);
+	Del_Space(b.type);
+	Del_Space(b.nxb);
+	if (checkName(b.author) == 0|| checkName(b.type)==0 || checkName(b.nxb)==0)
+	{
+		//check ten tac gia va ten the loai, ten nxb
+		return 0;
+	}
+	return 1;
+}
+
+void AddBook(Book_data* bd)
+{
+	book temp;
+	NhapInfoSach(&temp);
+	int available = 0;
+	for (int i = 0; i < bd->n; i++)
+	{
+		if (temp.ISBN == bd->book_lst[i].ISBN && _stricmp(temp.name,bd->book_lst[i].name)==0)
+		{
+			printf("Ma sach nay da co trong thu vien -> tang so luong sach\n");
+			bd->book_lst[i].quantity += temp.quantity;
+			available = 1;
+			break;
+		}
+	}
+	if (available == 0)
+	{
+		bd->book_lst[bd->n] = temp;
+		bd->n++;
+		printf("Da add sach moi vao thu vien\n");
 	}
 }
