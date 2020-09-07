@@ -2,7 +2,8 @@
 #include <math.h>
 #include <string.h>
 #include <conio.h>
-#define Max 50
+#include <time.h>
+#define Max 100
 
 //**********************************************************************************
 //Struct define
@@ -37,7 +38,7 @@ struct book {
 	char nxb[Max];
 	int year;
 	char type[Max];
-	float cost;
+	double cost;
 	int quantity;
 };
 
@@ -101,3 +102,11 @@ void SearchName(Data user);
 int ChonQuanLy();
 
 void InSach(Book_data bd);
+
+void NhapInfoSach(book* b);
+
+int checkName(char s[]);
+
+int Book_Validate(book b);
+
+void AddBook(Book_data* bd);
