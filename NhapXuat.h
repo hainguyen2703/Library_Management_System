@@ -107,6 +107,18 @@ void NhapInfoSach(book* b);
 
 int checkName(char s[]);
 
-int Book_Validate(book b);
+int Book_Validate(book *b);
 
 void AddBook(Book_data* bd);
+
+int SearchBook_ISBN(Book_data* bd);
+
+int SearchBook_name(Book_data bd);
+
+int Empty_Book_List(Book_data bd);
+
+void Modify_Book(Book_data* bd);
+
+int XoaPos(Book_data* bd, int pos);
+
+void Delete_book(Book_data* bd);
