@@ -256,6 +256,10 @@ int main()
 							printf("**************Book Management*************\n");
 							printf("1. In danh sach cac cuon sach\n");
 							printf("2. Them sach vao thu vien\n");
+							printf("3. Tim kim sach theo ISBN\n");
+							printf("4. Tim kim sach theo ten\n");
+							printf("5. Chinh sua thong tin sach\n");
+							printf("6. Xoa thong tin sach\n");
 							printf("Enter 0 to Exit\n");
 							printf("Nhap vao chuc nang ban muon su dung: ");
 							scanf("%d", &action);
@@ -266,6 +270,28 @@ int main()
 								break;
 							case 2:
 								AddBook(&book_list);
+								break;
+							case 3:
+								if (SearchBook_ISBN(&book_list) == 0)
+								{
+									printf("Khong tim duoc sach\n");
+								}
+								break;
+							case 4:
+								if (SearchBook_name(book_list) == 0)
+								{
+									printf("Khong tim duoc sach\n");
+								}
+								break;
+							case 5:
+								printf("*********Danh sach sach co trong thu vien*********\n");
+								InSach(book_list);//in danh sach ra de chon sach muon chinh sua
+								Modify_Book(&book_list);
+								break;
+							case 6:
+								printf("*********Danh sach sach co trong thu vien*********\n");
+								InSach(book_list);//in danh sach ra de chon sach muon xoa
+								Delete_book(&book_list);
 								break;
 							default:
 								break;
@@ -825,9 +851,9 @@ void NhapInfoSach(book* b)
 		printf("Nhap vao gia tien: ");
 		scanf("%lf", &b->cost);
 		rewind(stdin);
-		valid = Book_Validate(*b);
+		valid = Book_Validate(b);
 		if (valid == 0)
-			printf("Sach nhap vao khong hop le\n");
+			printf("Thong tin sach nhap vao khong hop le\n");
 	} while (valid==0);
 }
 
@@ -844,22 +870,23 @@ int checkName(char s[])
 	return 1;
 }
 
-int Book_Validate(book b)
+int Book_Validate(book *b)
 {
 	time_t s;
 	tm *current_time;
 	s = time(NULL);
 	current_time = localtime(&s);
-	if (b.year > (current_time->tm_year + 1900) || b.quantity < 0 || b.cost < 0)
+	if (b->year > (current_time->tm_year + 1900) || b->quantity < 0 || b->cost < 0)
 	{
 		//check nam xuat ban, so quyen sach nhap vao, gia tien
 		printf("Nam xb khong hop le\n");
 		return 0;
 	}
-	Del_Space(b.author);
-	Del_Space(b.type);
-	Del_Space(b.nxb);
-	if (checkName(b.author) == 0|| checkName(b.type)==0 || checkName(b.nxb)==0)
+	Del_Space(b->author);
+	Del_Space(b->type);
+	Del_Space(b->nxb);
+	Del_Space(b->name);
+	if (checkName(b->author) == 0|| checkName(b->type)==0 || checkName(b->nxb)==0)
 	{
 		//check ten tac gia va ten the loai, ten nxb
 		return 0;
@@ -887,5 +914,167 @@ void AddBook(Book_data* bd)
 		bd->book_lst[bd->n] = temp;
 		bd->n++;
 		printf("Da add sach moi vao thu vien\n");
+	}
+}
+
+int SearchBook_ISBN(Book_data* bd)
+{
+	if (bd->n == 0)
+	{
+		printf("Chua co cuon sach nao trong thu vien\n");
+		return 0;
+	}
+	int temp;
+	printf("Nhap vao ma ISBN muon search: ");
+	scanf("%d", &temp);
+	rewind(stdin);
+	book temp_book;
+	int search_flag=0;
+	for (int i = 0; i < bd->n; i++)
+	{
+		if (temp == bd->book_lst[i].ISBN)
+		{
+			temp_book = bd->book_lst[i];
+			search_flag = 1;
+			break;
+		}
+	}
+	if (search_flag == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		printf("*************Da tim dc sach ban muon************\n");
+		printf("Ma sach: %d\n", temp_book.ISBN);
+		printf("Ten sach: %s\n", temp_book.name);
+		printf("Tac gia: %s\n", temp_book.author);
+		return 1;
+	}
+}
+
+int SearchBook_name(Book_data bd)
+{
+	if (bd.n == 0)
+	{
+		printf("Chua co sach nao trong thu vien\n");
+		return 0;
+	}
+	char name_temp[Max];
+	printf("Nhap vao ten sach muon tim: ");
+	rewind(stdin);
+	gets_s(name_temp);
+	rewind(stdin);
+	Del_Space(name_temp);
+	int name_search=0;
+	book temp_book;
+	for (int i = 0; i < bd.n; i++)
+	{
+		if (_stricmp(name_temp, bd.book_lst[i].name) == 0)
+		{
+			name_search = 1;
+			temp_book = bd.book_lst[i];
+			break;
+		}
+	}
+	if (name_search == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		printf("*************Da tim dc sach ban muon************\n");
+		printf("Ma sach: %d\n", temp_book.ISBN);
+		printf("Ten sach: %s\n", temp_book.name);
+		printf("Tac gia: %s\n", temp_book.author);
+		return 1;
+	}
+}
+
+int Empty_Book_List(Book_data bd)
+{
+	return (bd.n == 0) ? 1 : 0;
+}
+
+void Modify_Book(Book_data* bd)
+{
+	if (Empty_Book_List(*bd) == 1)
+	{
+		printf("Chua co sach trong thu vien\n");
+	}
+	else
+	{
+		int temp_isbn;
+		printf("Nhap vao ma so ISBN cua sach muon sua thong tin: ");
+		scanf("%d", &temp_isbn);
+		rewind(stdin);
+		int searched = 0;
+		int pos;
+		for (int i = 0; i < bd->n; i++)
+		{
+			if (temp_isbn == bd->book_lst[i].ISBN)
+			{
+				pos = i;
+				searched = 1;
+				break;
+			}
+		}
+		if (searched == 0)
+		{
+			printf("Khong tim dc sach\n");
+		}
+		else
+		{
+			NhapInfoSach(&bd->book_lst[pos]);
+			printf("Da sua thong tin thanh cong\n");
+		}
+	}
+}
+
+int XoaPos(Book_data* bd, int pos)
+{
+	if (Empty_Book_List(*bd) == 1)
+	{
+		return 0;
+	}
+	for (int i = pos; i < bd->n-1; i++)
+	{
+		bd->book_lst[i] = bd->book_lst[i + 1];
+	}
+	bd->n--;
+	return 1;
+}
+
+void Delete_book(Book_data* bd)
+{
+	if (Empty_Book_List(*bd) == 1)
+	{
+		printf("Khong co quyen sach nao trong thu vien\n");
+	}
+	else
+	{
+		int temp_isbn;
+		printf("Nhap vao ma sach muon xoa: ");
+		scanf("%d", &temp_isbn);
+		rewind(stdin);
+		int searched = 0;
+		int pos;
+		for (int i = 0; i < bd->n; i++)
+		{
+			if (temp_isbn == bd->book_lst[i].ISBN)
+			{
+				searched = 1;
+				pos = i;
+				break;
+			}
+		}
+		if (searched == 0)
+		{
+			printf("Khong tim thay sach muon xoa\n");
+		}
+		else
+		{
+			XoaPos(bd, pos);
+		}
 	}
 }
