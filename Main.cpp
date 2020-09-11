@@ -14,13 +14,15 @@ int main()
 	//******************************************************************************
 	char file[] = "Data.dat";
 	char book_file[] = "Book.dat";
+	char hire_file[] = "Hire.dat";
 	int option;
 	Data user;
 	info acc;
 	Book_data book_list;
 	book bk;
+	hires_data hire_list;
 	//******************************************************************************
-	if (GetData(file, &user) == 0 || GetBookData(book_file,&book_list)==0)
+	if (GetData(file, &user) == 0 || GetBookData(book_file,&book_list)==0 || GetHireData(hire_file,&hire_list)==0)
 	{
 		printf("Khong lay duoc data\n");
 	}
@@ -103,7 +105,9 @@ int main()
 						printf("\n----------------------Login Menu------------------------\n");
 						printf("1. Update information\n");
 						printf("2. Change password\n");
-						printf("3. Exit\n");
+						printf("3. Print book list\n");
+						printf("4. Rent a book\n");
+						printf("0. Exit\n");
 						printf("Enter your action: ");
 						scanf("%d", &action);
 						rewind(stdin);
@@ -127,10 +131,21 @@ int main()
 							ChangePassword(&acc, &user);
 							break;
 							//***********************************************************************
+						case 3:
+							//**************************Print book list******************************
+							InSach(book_list);
+							break;
+							//***********************************************************************
+						case 4:
+							//******************************Rent a book******************************
+							printf("--------------------------Muon sach---------------------------\n");
+							MuonSach(&book_list, &hire_list, acc);
+							break;
+							//***********************************************************************
 						default:
 							break;
 						}
-					} while (action != 3);
+					} while (action != 0);
 				}
 				else
 				{
@@ -303,7 +318,7 @@ int main()
 		} while (option != 0);//neu option = 0 thi exit chuong trinh
 	}	
 	//luu data vao file truoc khi exit
-	if (SaveData(file, user) == 0 || SaveBookData(book_file,book_list)==0)
+	if (SaveData(file, user) == 0 || SaveBookData(book_file,book_list)==0 || SaveHireData(hire_file,hire_list)==0)
 	{
 		printf("Khong luu duoc du lieu vao file\n");
 	}
@@ -355,6 +370,28 @@ int GetBookData(char *file_name, Book_data *book_list)
 	}
 }
 
+int GetHireData(char* file_name, hires_data* hire_list)
+{
+	FILE* fp;
+	fp = fopen(file_name,"rb");
+	if (fp == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		int k = 0;
+		while (feof(fp) == 0)
+		{
+			if (fread(&hire_list->lst[k], sizeof(hire_book), 1, fp) == 1)
+			{
+				hire_list->n++;
+			}
+			fclose(fp);
+			return 1;
+		}
+	}
+}
 int SaveData(char* file_name, Data user)
 {
 	FILE* fp;
@@ -382,6 +419,22 @@ int SaveBookData(char *file_name, Book_data book_list)
 	else
 	{
 		fwrite(book_list.book_lst, sizeof(book), book_list.n, fp);
+		fclose(fp);
+		return 1;
+	}
+}
+
+int SaveHireData(char* file_name, hires_data hire_list)
+{
+	FILE* fp;
+	fp = fopen(file_name, "wb");
+	if (fp == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		fwrite(hire_list.lst, sizeof(hire_book), hire_list.n, fp);
 		fclose(fp);
 		return 1;
 	}
@@ -1076,5 +1129,108 @@ void Delete_book(Book_data* bd)
 		{
 			XoaPos(bd, pos);
 		}
+	}
+}
+
+void MuonSach(Book_data* bd, hires_data *data_list,info user)
+{
+	hire_book temp;
+	if (TaoPhieuMuon(bd, &temp, user) == 1)
+	{
+		data_list->lst[data_list->n++] = temp;
+		printf("Phieu muon tao thanh cong!!\n");
+	}
+	else
+	{
+		printf("Khong thanh cong!!\n");
+	}
+}
+
+int TaoPhieuMuon(Book_data* bd, hire_book* paper, info user)
+{
+	InSach(*bd);//in danh sach sach ra cho doc gia chon
+	int isbn_hire;
+	printf("Nhap vao ma sach ban muon muon: ");
+	scanf("%d", &isbn_hire);
+	rewind(stdin);
+	//check xem sach do co trong thu vien khong
+	int pos = -1;
+	for (int i = 0; i < bd->n; i++)
+	{
+		if (isbn_hire == bd->book_lst[i].ISBN)
+		{
+			pos = i;
+			break;
+		}
+	}
+	if (pos == -1)
+	{
+		printf("Sach nay khong co trong thu vien\n");
+		return 0;
+	}
+	else
+	{
+		FillIn(paper, user);
+		//dien ma isbn
+		paper->ISBN_list[paper->number++] = isbn_hire;
+		return 1;
+	}
+}
+
+int Nhuan(int* year)
+{
+	if ((*year % 100 != 0 && *year % 4 == 0) || (*year % 400 == 0))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+int dayMax(int* month, int *year)
+{
+	int maxDay;
+	switch (*month)
+	{
+	case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+		maxDay = 31;
+		break;
+	case 4: case 6: case 9: case 11:
+		maxDay = 30;
+		break;
+	case 2:
+		if (Nhuan(year) == 1)
+		{
+			maxDay = 29;
+		}
+		else
+		{
+			maxDay = 28;
+		}
+		break;
+	}
+	return maxDay;
+}
+
+void FillIn(hire_book* paper, info user)
+{
+	paper->reader_id = user.tag.Reader_id;
+	//lay thoi gian vao thoi diem muon sach
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	paper->check_out.d = tm.tm_mday;//ngay muon sach
+	paper->check_out.m = tm.tm_mon;//thang muon sach
+	paper->check_out.y = tm.tm_year + 1900;//nam muon sach
+	//tinh ngay tra sach du kien
+	paper->ret_expect.y = tm.tm_year;
+	int maxday = dayMax(&tm.tm_mon, &tm.tm_year);
+	if ((tm.tm_mday + 7) > maxday)
+	{
+		paper->ret_expect.m = tm.tm_mon + 1;
+		paper->ret_expect.d = 7 - (maxday - tm.tm_mday);
+	}
+	else
+	{
+		paper->ret_expect.m = tm.tm_mon;
+		paper->ret_expect.d = tm.tm_mday + 7;
 	}
 }
